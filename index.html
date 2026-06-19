@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Taskflow — State-Driven Task Manager</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="app-wrapper">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar__logo">
+        <span class="logo-mark">TF</span>
+        <span class="logo-name">Taskflow</span>
+      </div>
+
+      <nav class="sidebar__nav">
+        <button class="nav-btn active" data-filter="all">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="1" y="9" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="9" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>
+          All Tasks
+          <span class="badge" id="badge-all">0</span>
+        </button>
+        <button class="nav-btn" data-filter="active">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 8.5L7.5 10.5L10.5 6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.3"/></svg>
+          Active
+          <span class="badge" id="badge-active">0</span>
+        </button>
+        <button class="nav-btn" data-filter="completed">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 8.5L7.5 10.5L10.5 6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Completed
+          <span class="badge" id="badge-completed">0</span>
+        </button>
+      </nav>
+
+      <div class="sidebar__stats">
+        <div class="stat">
+          <span class="stat__value" id="stat-total">0</span>
+          <span class="stat__label">Total</span>
+        </div>
+        <div class="stat">
+          <span class="stat__value" id="stat-done">0%</span>
+          <span class="stat__label">Done</span>
+        </div>
+      </div>
+
+      <button class="clear-btn" id="clearCompleted">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2L12 12M12 2L2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Clear completed
+      </button>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+
+      <header class="main__header">
+        <div class="header__top">
+          <h1 class="header__title" id="viewTitle">All Tasks</h1>
+          <div class="header__date" id="currentDate"></div>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="progress-track">
+          <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+        </div>
+      </header>
+
+      <!-- ADD TASK FORM -->
+      <div class="add-task-section">
+        <div class="add-task-form" id="addTaskForm">
+          <input
+            type="text"
+            class="task-input"
+            id="taskInput"
+            placeholder="Add a new task… press Enter or click +"
+            maxlength="200"
+            autocomplete="off"
+          />
+          <div class="form-controls">
+            <select class="priority-select" id="prioritySelect">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+            <button class="add-btn" id="addTaskBtn" aria-label="Add task">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SORT BAR -->
+      <div class="sort-bar">
+        <span class="sort-label">Sort by</span>
+        <button class="sort-btn active" data-sort="created">Date</button>
+        <button class="sort-btn" data-sort="priority">Priority</button>
+        <button class="sort-btn" data-sort="alpha">A–Z</button>
+        <div class="sort-bar__right">
+          <button class="select-all-btn" id="selectAllBtn">Select all</button>
+        </div>
+      </div>
+
+      <!-- TASK LIST -->
+      <div class="task-list-container">
+        <ul class="task-list" id="taskList">
+          <!-- Tasks injected by JS -->
+        </ul>
+
+        <!-- EMPTY STATE -->
+        <div class="empty-state" id="emptyState" hidden>
+          <div class="empty-state__icon">
+            <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+              <rect x="8" y="12" width="40" height="36" rx="4" stroke="currentColor" stroke-width="2"/>
+              <path d="M20 12V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4" stroke="currentColor" stroke-width="2"/>
+              <path d="M20 26h16M20 34h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <p class="empty-state__title" id="emptyTitle">No tasks yet</p>
+          <p class="empty-state__sub" id="emptySub">Add your first task above to get started.</p>
+        </div>
+      </div>
+
+      <!-- BULK ACTIONS (shown when tasks selected) -->
+      <div class="bulk-actions" id="bulkActions" hidden>
+        <span class="bulk-actions__count" id="bulkCount">0 selected</span>
+        <button class="bulk-btn bulk-btn--complete" id="bulkComplete">Mark done</button>
+        <button class="bulk-btn bulk-btn--delete" id="bulkDelete">Delete</button>
+        <button class="bulk-btn bulk-btn--cancel" id="bulkCancel">Cancel</button>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- EDIT MODAL -->
+  <div class="modal-overlay" id="modalOverlay" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalHeading">
+      <h2 class="modal__heading" id="modalHeading">Edit Task</h2>
+      <input type="text" class="modal__input" id="modalInput" maxlength="200" />
+      <div class="modal__priority">
+        <label class="modal__label">Priority</label>
+        <div class="priority-group" id="modalPriorityGroup">
+          <button class="priority-chip" data-value="low">Low</button>
+          <button class="priority-chip" data-value="medium">Medium</button>
+          <button class="priority-chip" data-value="high">High</button>
+        </div>
+      </div>
+      <div class="modal__actions">
+        <button class="modal-btn modal-btn--cancel" id="modalCancel">Cancel</button>
+        <button class="modal-btn modal-btn--save" id="modalSave">Save changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast" aria-live="polite"></div>
+
+  <script src="js/state.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/events.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
